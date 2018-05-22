@@ -28,7 +28,17 @@ test('enum members aren\'t equal to other enum members with the same name', () =
   expect(A.C).not.toBe(B.C);
 });
 
-test('enums has a .keys method that has all keys', () => {
+test('enums have a method .size that returns the number of members', () => {
+  enum A {
+    A,
+    B,
+    C
+  };
+
+  expect(A.size()).toBe(3);
+});
+
+test('enums have a method .keys that has all keys', () => {
   enum A {
     A,
     B,
@@ -41,7 +51,7 @@ test('enums has a .keys method that has all keys', () => {
   }
 });
 
-test('enums has a .values method that has all values', () => {
+test('enums have a method .values that returns all values', () => {
   enum A {
     A,
     B,
@@ -59,7 +69,22 @@ test('enums has a .values method that has all values', () => {
   }
 });
 
-test('enums have a memberOf method that returns true for all members', () => {
+test('enums have a method .entries that returns all entries', () => {
+  enum A {
+    A,
+    B,
+    C
+  };
+
+  let i = 0;
+  for (const [key, value] of A.entries()) {
+    i++;
+    expect(A[key]).toBe(value);
+  }
+  expect(i).toBe(A.size());
+});
+
+test('enums have a method .has that returns true for all members', () => {
   enum A {
     A,
     B,
@@ -67,11 +92,11 @@ test('enums have a memberOf method that returns true for all members', () => {
   };
 
   for (const value of A.values()) {
-    expect(A.memberOf(value)).toBeTruthy();
+    expect(A.has(value)).toBeTruthy();
   }
 });
 
-test('enum have a memberOf method that returns false for members of other enums', () => {
+test('enums have a method .has that returns false for members of other enums', () => {
   enum A {
     A,
     B,
@@ -85,11 +110,23 @@ test('enum have a memberOf method that returns false for members of other enums'
   };
 
   for (const value of A.values()) {
-    expect(B.memberOf(value)).toBeFalsy();
+    expect(B.has(value)).toBeFalsy();
   }
   for (const value of B.values()) {
-    expect(A.memberOf(value)).toBeFalsy();
+    expect(A.has(value)).toBeFalsy();
   }
+});
+
+test('enums have a method .forEach that calls a callback on every member', () => {
+  enum A {
+    A,
+    B,
+    C
+  };
+
+  let members = [];
+  A.forEach(member => members.push(member));
+  expect(members.length).toBe(A.size());
 });
 
 test('enum members are enumerable', () => {
@@ -104,11 +141,62 @@ test('enum members are enumerable', () => {
     i++;
     expect(A[member]).toBe(A[member]);
   }
-  debugger;
+
   expect(i).toBe(A.values().length);
 });
 
-/** TODO
+test('enums identifier is optional', () => {
+  const A = enum {
+    A,
+    B,
+    C
+  };
+
+  expect(A.size()).toBe(3);
+  expect(typeof A.A).toBe('symbol');
+});
+
+test('enums can be used with switch', () => {
+  enum A {
+    A,
+    B,
+    C
+  };
+
+  let val;
+  switch (A.B) {
+    case A.A:
+      val = 'hi';
+      break;
+    case A.B:
+      val = 'hello';
+      break;
+    case A.C:
+      val = 'hi there';
+      break;
+    default:
+      throw new Error('you gotta specify one')
+  }
+
+  expect(val).toBe('hello');
+});
+
+test('enums can be nested', () => {
+  enum COLORS {
+    GREY = enum {
+      LIGHT = '#aaa',
+      DARK = '#fff'
+    },
+    BLUE = enum {
+      LIGHT = '#a3f',
+      DARK = '#f6f'
+    }
+  };
+
+  expect(COLORS.GREY.LIGHT).toBe('#aaa');
+  expect(COLORS.BLUE.DARK).toBe('#f6f');
+});
+
 test('supports inline assignments to override the default value', () => {
   const aValue = 'A';
   enum A {
@@ -119,21 +207,3 @@ test('supports inline assignments to override the default value', () => {
   expect(A.A).toBe(aValue);
   expect(A.B).toBe('B');
 });
-
-test('supports computed enum members', () => {
-  const aValue = 'A';
-  const bValue = 'B';
-  const cValue = 'C';
-  enum A {
-    [aValue],
-    [bValue] = bValue,
-    [cValue]
-  };
-
-  expect(A[aValue]).toBeTruthy();
-  expect(typeof A[aValue]).toBe(typeof Symbol);
-  expect(A[bValue]).toBe(bValue);
-  expect(A[cValue]).toBeTruthy();
-  expect(typeof A[cValue]).toBe(typeof Symbol);
-});
-*/
